@@ -1,0 +1,10 @@
+{
+  "storeApp": {
+    "Gender": {
+      "null": "",
+      "MAL": "MAL",
+      "FEMALE": "FEMALE",
+      "OTHER": "OTHER"
+    }
+  }
+}
