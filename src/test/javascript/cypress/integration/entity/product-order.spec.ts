@@ -19,16 +19,51 @@ describe('ProductOrder e2e test', () => {
   const productOrderSample = { placedDate: '2022-06-23T06:45:15.848Z', status: 'PENDING', code: 'Product' };
 
   let productOrder: any;
+  //let customer: any;
 
   beforeEach(() => {
     cy.login(username, password);
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // create an instance at the required relationship entity:
+    cy.authenticatedRequest({
+      method: 'POST',
+      url: '/api/customers',
+      body: {"firstName":"Prince","lastName":"Hyatt","gender":"FEMALE","email":"F*M@B./:G{0J","phone":"390-690-2331","addressLine1":"backing","addressLine2":"Chicken","city":"Warner Robins","country":"China"},
+    }).then(({ body }) => {
+      customer = body;
+    });
+  });
+   */
 
   beforeEach(() => {
     cy.intercept('GET', '/api/product-orders+(?*|)').as('entitiesRequest');
     cy.intercept('POST', '/api/product-orders').as('postEntityRequest');
     cy.intercept('DELETE', '/api/product-orders/*').as('deleteEntityRequest');
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // Simulate relationships api for better performance and reproducibility.
+    cy.intercept('GET', '/api/invoices', {
+      statusCode: 200,
+      body: [],
+    });
+
+    cy.intercept('GET', '/api/order-items', {
+      statusCode: 200,
+      body: [],
+    });
+
+    cy.intercept('GET', '/api/customers', {
+      statusCode: 200,
+      body: [customer],
+    });
+
+  });
+   */
 
   afterEach(() => {
     if (productOrder) {
@@ -40,6 +75,19 @@ describe('ProductOrder e2e test', () => {
       });
     }
   });
+
+  /* Disabled due to incompatibility
+  afterEach(() => {
+    if (customer) {
+      cy.authenticatedRequest({
+        method: 'DELETE',
+        url: `/api/customers/${customer.id}`,
+      }).then(() => {
+        customer = undefined;
+      });
+    }
+  });
+   */
 
   it('ProductOrders menu should load ProductOrders page', () => {
     cy.visit('/');
@@ -76,11 +124,15 @@ describe('ProductOrder e2e test', () => {
     });
 
     describe('with existing value', () => {
+      /* Disabled due to incompatibility
       beforeEach(() => {
         cy.authenticatedRequest({
           method: 'POST',
           url: '/api/product-orders',
-          body: productOrderSample,
+          body: {
+            ...productOrderSample,
+            customer: customer,
+          },
         }).then(({ body }) => {
           productOrder = body;
 
@@ -104,6 +156,17 @@ describe('ProductOrder e2e test', () => {
 
         cy.wait('@entitiesRequestInternal');
       });
+       */
+
+      beforeEach(function () {
+        cy.visit(productOrderPageUrl);
+
+        cy.wait('@entitiesRequest').then(({ response }) => {
+          if (response!.body.length === 0) {
+            this.skip();
+          }
+        });
+      });
 
       it('detail button click should load details ProductOrder page', () => {
         cy.get(entityDetailsButtonSelector).first().click();
@@ -126,7 +189,7 @@ describe('ProductOrder e2e test', () => {
         cy.url().should('match', productOrderPageUrlPattern);
       });
 
-      it('last delete button click should delete instance of ProductOrder', () => {
+      it.skip('last delete button click should delete instance of ProductOrder', () => {
         cy.get(entityDeleteButtonSelector).last().click();
         cy.getEntityDeleteDialogHeading('productOrder').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
@@ -150,12 +213,14 @@ describe('ProductOrder e2e test', () => {
       cy.getEntityCreateUpdateHeading('ProductOrder');
     });
 
-    it('should create an instance of ProductOrder', () => {
+    it.skip('should create an instance of ProductOrder', () => {
       cy.get(`[data-cy="placedDate"]`).type('2022-06-23T07:42').should('have.value', '2022-06-23T07:42');
 
       cy.get(`[data-cy="status"]`).select('PENDING');
 
       cy.get(`[data-cy="code"]`).type('database Mills copy').should('have.value', 'database Mills copy');
+
+      cy.get(`[data-cy="customer"]`).select(1);
 
       cy.get(entityCreateSaveButtonSelector).click();
 

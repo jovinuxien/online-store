@@ -1,5 +1,5 @@
 {
-  "applications": "*",
+  "applications": ["store"],
   "changelogDate": "20220623132454",
   "dto": "no",
   "embedded": false,
@@ -29,22 +29,24 @@
   "readOnly": false,
   "relationships": [
     {
-      "otherEntityName": "orderItem",
-      "otherEntityRelationshipName": "order",
-      "relationshipName": "orderItem",
-      "relationshipType": "one-to-many"
-    },
-    {
       "otherEntityName": "invoice",
       "otherEntityRelationshipName": "order",
       "relationshipName": "invoice",
       "relationshipType": "one-to-many"
     },
     {
+      "otherEntityName": "orderItem",
+      "otherEntityRelationshipName": "order",
+      "relationshipName": "orderItem",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityField": "email",
       "otherEntityName": "customer",
       "otherEntityRelationshipName": "order",
       "relationshipName": "customer",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
     }
   ],
   "service": "serviceClass"

@@ -41,15 +41,16 @@ public class ProductOrder implements Serializable {
 
     @OneToMany(mappedBy = "order")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "product", "order" }, allowSetters = true)
-    private Set<OrderItem> orderItems = new HashSet<>();
-
-    @OneToMany(mappedBy = "order")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "shipments", "order" }, allowSetters = true)
     private Set<Invoice> invoices = new HashSet<>();
 
-    @ManyToOne
+    @OneToMany(mappedBy = "order")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "product", "order" }, allowSetters = true)
+    private Set<OrderItem> orderItems = new HashSet<>();
+
+    @ManyToOne(optional = false)
+    @NotNull
     @JsonIgnoreProperties(value = { "user", "orders" }, allowSetters = true)
     private Customer customer;
 
@@ -107,37 +108,6 @@ public class ProductOrder implements Serializable {
         this.code = code;
     }
 
-    public Set<OrderItem> getOrderItems() {
-        return this.orderItems;
-    }
-
-    public void setOrderItems(Set<OrderItem> orderItems) {
-        if (this.orderItems != null) {
-            this.orderItems.forEach(i -> i.setOrder(null));
-        }
-        if (orderItems != null) {
-            orderItems.forEach(i -> i.setOrder(this));
-        }
-        this.orderItems = orderItems;
-    }
-
-    public ProductOrder orderItems(Set<OrderItem> orderItems) {
-        this.setOrderItems(orderItems);
-        return this;
-    }
-
-    public ProductOrder addOrderItem(OrderItem orderItem) {
-        this.orderItems.add(orderItem);
-        orderItem.setOrder(this);
-        return this;
-    }
-
-    public ProductOrder removeOrderItem(OrderItem orderItem) {
-        this.orderItems.remove(orderItem);
-        orderItem.setOrder(null);
-        return this;
-    }
-
     public Set<Invoice> getInvoices() {
         return this.invoices;
     }
@@ -166,6 +136,37 @@ public class ProductOrder implements Serializable {
     public ProductOrder removeInvoice(Invoice invoice) {
         this.invoices.remove(invoice);
         invoice.setOrder(null);
+        return this;
+    }
+
+    public Set<OrderItem> getOrderItems() {
+        return this.orderItems;
+    }
+
+    public void setOrderItems(Set<OrderItem> orderItems) {
+        if (this.orderItems != null) {
+            this.orderItems.forEach(i -> i.setOrder(null));
+        }
+        if (orderItems != null) {
+            orderItems.forEach(i -> i.setOrder(this));
+        }
+        this.orderItems = orderItems;
+    }
+
+    public ProductOrder orderItems(Set<OrderItem> orderItems) {
+        this.setOrderItems(orderItems);
+        return this;
+    }
+
+    public ProductOrder addOrderItem(OrderItem orderItem) {
+        this.orderItems.add(orderItem);
+        orderItem.setOrder(this);
+        return this;
+    }
+
+    public ProductOrder removeOrderItem(OrderItem orderItem) {
+        this.orderItems.remove(orderItem);
+        orderItem.setOrder(null);
         return this;
     }
 

@@ -87,6 +87,15 @@ public class ProductOrderService {
     }
 
     /**
+     * Get all the productOrders with eager load of many-to-many relationships.
+     *
+     * @return the list of entities.
+     */
+    public Page<ProductOrder> findAllWithEagerRelationships(Pageable pageable) {
+        return productOrderRepository.findAllWithEagerRelationships(pageable);
+    }
+
+    /**
      * Get one productOrder by id.
      *
      * @param id the id of the entity.
@@ -95,7 +104,7 @@ public class ProductOrderService {
     @Transactional(readOnly = true)
     public Optional<ProductOrder> findOne(Long id) {
         log.debug("Request to get ProductOrder : {}", id);
-        return productOrderRepository.findById(id);
+        return productOrderRepository.findOneWithEagerRelationships(id);
     }
 
     /**

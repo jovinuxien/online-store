@@ -28,16 +28,46 @@ describe('Customer e2e test', () => {
   };
 
   let customer: any;
+  //let user: any;
 
   beforeEach(() => {
     cy.login(username, password);
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // create an instance at the required relationship entity:
+    cy.authenticatedRequest({
+      method: 'POST',
+      url: '/api/users',
+      body: {"login":"Implementation Berkshire withdrawal","firstName":"Jordi","lastName":"Ferry"},
+    }).then(({ body }) => {
+      user = body;
+    });
+  });
+   */
 
   beforeEach(() => {
     cy.intercept('GET', '/api/customers+(?*|)').as('entitiesRequest');
     cy.intercept('POST', '/api/customers').as('postEntityRequest');
     cy.intercept('DELETE', '/api/customers/*').as('deleteEntityRequest');
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // Simulate relationships api for better performance and reproducibility.
+    cy.intercept('GET', '/api/users', {
+      statusCode: 200,
+      body: [user],
+    });
+
+    cy.intercept('GET', '/api/product-orders', {
+      statusCode: 200,
+      body: [],
+    });
+
+  });
+   */
 
   afterEach(() => {
     if (customer) {
@@ -49,6 +79,19 @@ describe('Customer e2e test', () => {
       });
     }
   });
+
+  /* Disabled due to incompatibility
+  afterEach(() => {
+    if (user) {
+      cy.authenticatedRequest({
+        method: 'DELETE',
+        url: `/api/users/${user.id}`,
+      }).then(() => {
+        user = undefined;
+      });
+    }
+  });
+   */
 
   it('Customers menu should load Customers page', () => {
     cy.visit('/');
@@ -85,11 +128,15 @@ describe('Customer e2e test', () => {
     });
 
     describe('with existing value', () => {
+      /* Disabled due to incompatibility
       beforeEach(() => {
         cy.authenticatedRequest({
           method: 'POST',
           url: '/api/customers',
-          body: customerSample,
+          body: {
+            ...customerSample,
+            user: user,
+          },
         }).then(({ body }) => {
           customer = body;
 
@@ -113,6 +160,17 @@ describe('Customer e2e test', () => {
 
         cy.wait('@entitiesRequestInternal');
       });
+       */
+
+      beforeEach(function () {
+        cy.visit(customerPageUrl);
+
+        cy.wait('@entitiesRequest').then(({ response }) => {
+          if (response!.body.length === 0) {
+            this.skip();
+          }
+        });
+      });
 
       it('detail button click should load details Customer page', () => {
         cy.get(entityDetailsButtonSelector).first().click();
@@ -135,7 +193,7 @@ describe('Customer e2e test', () => {
         cy.url().should('match', customerPageUrlPattern);
       });
 
-      it('last delete button click should delete instance of Customer', () => {
+      it.skip('last delete button click should delete instance of Customer', () => {
         cy.get(entityDeleteButtonSelector).last().click();
         cy.getEntityDeleteDialogHeading('customer').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
@@ -159,7 +217,7 @@ describe('Customer e2e test', () => {
       cy.getEntityCreateUpdateHeading('Customer');
     });
 
-    it('should create an instance of Customer', () => {
+    it.skip('should create an instance of Customer', () => {
       cy.get(`[data-cy="firstName"]`).type('Fredy').should('have.value', 'Fredy');
 
       cy.get(`[data-cy="lastName"]`).type('Schoen').should('have.value', 'Schoen');
@@ -177,6 +235,8 @@ describe('Customer e2e test', () => {
       cy.get(`[data-cy="city"]`).type('North Seanberg').should('have.value', 'North Seanberg');
 
       cy.get(`[data-cy="country"]`).type('Togo').should('have.value', 'Togo');
+
+      cy.get(`[data-cy="user"]`).select(1);
 
       cy.get(entityCreateSaveButtonSelector).click();
 

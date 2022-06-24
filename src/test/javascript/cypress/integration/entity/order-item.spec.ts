@@ -19,16 +19,55 @@ describe('OrderItem e2e test', () => {
   const orderItemSample = { quantity: 51870, totalPrice: 70011, status: 'OUT_OF_STOCK' };
 
   let orderItem: any;
+  //let product: any;
+  //let productOrder: any;
 
   beforeEach(() => {
     cy.login(username, password);
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // create an instance at the required relationship entity:
+    cy.authenticatedRequest({
+      method: 'POST',
+      url: '/api/products',
+      body: {"name":"Cotton Practical","description":"zero Bedfordshire Cambridgeshire","price":54383,"productSize":"XL","image":"Li4vZmFrZS1kYXRhL2Jsb2IvaGlwc3Rlci5wbmc=","imageContentType":"unknown"},
+    }).then(({ body }) => {
+      product = body;
+    });
+    // create an instance at the required relationship entity:
+    cy.authenticatedRequest({
+      method: 'POST',
+      url: '/api/product-orders',
+      body: {"placedDate":"2022-06-23T04:39:20.355Z","status":"COMPLETED","code":"Organized Computers copying"},
+    }).then(({ body }) => {
+      productOrder = body;
+    });
+  });
+   */
 
   beforeEach(() => {
     cy.intercept('GET', '/api/order-items+(?*|)').as('entitiesRequest');
     cy.intercept('POST', '/api/order-items').as('postEntityRequest');
     cy.intercept('DELETE', '/api/order-items/*').as('deleteEntityRequest');
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // Simulate relationships api for better performance and reproducibility.
+    cy.intercept('GET', '/api/products', {
+      statusCode: 200,
+      body: [product],
+    });
+
+    cy.intercept('GET', '/api/product-orders', {
+      statusCode: 200,
+      body: [productOrder],
+    });
+
+  });
+   */
 
   afterEach(() => {
     if (orderItem) {
@@ -40,6 +79,27 @@ describe('OrderItem e2e test', () => {
       });
     }
   });
+
+  /* Disabled due to incompatibility
+  afterEach(() => {
+    if (product) {
+      cy.authenticatedRequest({
+        method: 'DELETE',
+        url: `/api/products/${product.id}`,
+      }).then(() => {
+        product = undefined;
+      });
+    }
+    if (productOrder) {
+      cy.authenticatedRequest({
+        method: 'DELETE',
+        url: `/api/product-orders/${productOrder.id}`,
+      }).then(() => {
+        productOrder = undefined;
+      });
+    }
+  });
+   */
 
   it('OrderItems menu should load OrderItems page', () => {
     cy.visit('/');
@@ -76,11 +136,16 @@ describe('OrderItem e2e test', () => {
     });
 
     describe('with existing value', () => {
+      /* Disabled due to incompatibility
       beforeEach(() => {
         cy.authenticatedRequest({
           method: 'POST',
           url: '/api/order-items',
-          body: orderItemSample,
+          body: {
+            ...orderItemSample,
+            product: product,
+            order: productOrder,
+          },
         }).then(({ body }) => {
           orderItem = body;
 
@@ -104,6 +169,17 @@ describe('OrderItem e2e test', () => {
 
         cy.wait('@entitiesRequestInternal');
       });
+       */
+
+      beforeEach(function () {
+        cy.visit(orderItemPageUrl);
+
+        cy.wait('@entitiesRequest').then(({ response }) => {
+          if (response!.body.length === 0) {
+            this.skip();
+          }
+        });
+      });
 
       it('detail button click should load details OrderItem page', () => {
         cy.get(entityDetailsButtonSelector).first().click();
@@ -126,7 +202,7 @@ describe('OrderItem e2e test', () => {
         cy.url().should('match', orderItemPageUrlPattern);
       });
 
-      it('last delete button click should delete instance of OrderItem', () => {
+      it.skip('last delete button click should delete instance of OrderItem', () => {
         cy.get(entityDeleteButtonSelector).last().click();
         cy.getEntityDeleteDialogHeading('orderItem').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
@@ -150,12 +226,15 @@ describe('OrderItem e2e test', () => {
       cy.getEntityCreateUpdateHeading('OrderItem');
     });
 
-    it('should create an instance of OrderItem', () => {
+    it.skip('should create an instance of OrderItem', () => {
       cy.get(`[data-cy="quantity"]`).type('25675').should('have.value', '25675');
 
       cy.get(`[data-cy="totalPrice"]`).type('54687').should('have.value', '54687');
 
       cy.get(`[data-cy="status"]`).select('OUT_OF_STOCK');
+
+      cy.get(`[data-cy="product"]`).select(1);
+      cy.get(`[data-cy="order"]`).select(1);
 
       cy.get(entityCreateSaveButtonSelector).click();
 

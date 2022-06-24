@@ -1,5 +1,6 @@
 {
   "generator-jhipster": {
+    "applicationIndex": 0,
     "applicationType": "monolith",
     "authenticationType": "jwt",
     "baseName": "store",
@@ -22,6 +23,7 @@
     "enableTranslation": true,
     "entities": ["Product", "ProductCategory", "Customer", "ProductOrder", "OrderItem", "Invoice", "Shipment"],
     "entitySuffix": "",
+    "gradleEnterpriseHost": "",
     "jhiPrefix": "jhi",
     "jhipsterVersion": "7.8.1",
     "jwtSecretKey": "YWQxYmFkZWU5ZTAzMDc4NDU1YmI2YTJiZDZmNDE1Y2YxODUyMmZjY2QwNjk5YWE2NGVkZWQ5MTU3YWRlMWZhZmJjMWNmZGIzZDNmYjUyMjcxYTIzYWJkYTQzYjZmOGJjY2M2MjUxYzNhMmMxZGJlYzdjNjk1Nzg2NzBiMTM2Mjk=",
@@ -31,6 +33,7 @@
     "monorepository": true,
     "nativeLanguage": "en",
     "otherModules": [],
+    "packageFolder": "com/joviste/store",
     "packageName": "com.joviste.store",
     "pages": [],
     "prodDatabaseType": "mysql",

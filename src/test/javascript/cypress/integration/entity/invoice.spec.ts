@@ -17,24 +17,55 @@ describe('Invoice e2e test', () => {
   const username = Cypress.env('E2E_USERNAME') ?? 'user';
   const password = Cypress.env('E2E_PASSWORD') ?? 'user';
   const invoiceSample = {
-    date: '2022-06-23T01:52:54.741Z',
-    status: 'ISSUED',
-    paymentMethod: 'CASH_ON_DELIVERY',
-    paymentDate: '2022-06-23T12:51:27.319Z',
-    paymentAmount: 75679,
+    date: '2022-06-23T06:46:30.449Z',
+    status: 'CANCELLED',
+    paymentMethod: 'CREDIT_CARD',
+    paymentDate: '2022-06-22T18:04:17.768Z',
+    paymentAmount: 93812,
+    code: 'Loan',
   };
 
   let invoice: any;
+  //let productOrder: any;
 
   beforeEach(() => {
     cy.login(username, password);
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // create an instance at the required relationship entity:
+    cy.authenticatedRequest({
+      method: 'POST',
+      url: '/api/product-orders',
+      body: {"placedDate":"2022-06-22T17:29:43.270Z","status":"COMPLETED","code":"Total maroon"},
+    }).then(({ body }) => {
+      productOrder = body;
+    });
+  });
+   */
 
   beforeEach(() => {
     cy.intercept('GET', '/api/invoices+(?*|)').as('entitiesRequest');
     cy.intercept('POST', '/api/invoices').as('postEntityRequest');
     cy.intercept('DELETE', '/api/invoices/*').as('deleteEntityRequest');
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // Simulate relationships api for better performance and reproducibility.
+    cy.intercept('GET', '/api/shipments', {
+      statusCode: 200,
+      body: [],
+    });
+
+    cy.intercept('GET', '/api/product-orders', {
+      statusCode: 200,
+      body: [productOrder],
+    });
+
+  });
+   */
 
   afterEach(() => {
     if (invoice) {
@@ -46,6 +77,19 @@ describe('Invoice e2e test', () => {
       });
     }
   });
+
+  /* Disabled due to incompatibility
+  afterEach(() => {
+    if (productOrder) {
+      cy.authenticatedRequest({
+        method: 'DELETE',
+        url: `/api/product-orders/${productOrder.id}`,
+      }).then(() => {
+        productOrder = undefined;
+      });
+    }
+  });
+   */
 
   it('Invoices menu should load Invoices page', () => {
     cy.visit('/');
@@ -82,11 +126,15 @@ describe('Invoice e2e test', () => {
     });
 
     describe('with existing value', () => {
+      /* Disabled due to incompatibility
       beforeEach(() => {
         cy.authenticatedRequest({
           method: 'POST',
           url: '/api/invoices',
-          body: invoiceSample,
+          body: {
+            ...invoiceSample,
+            order: productOrder,
+          },
         }).then(({ body }) => {
           invoice = body;
 
@@ -110,6 +158,17 @@ describe('Invoice e2e test', () => {
 
         cy.wait('@entitiesRequestInternal');
       });
+       */
+
+      beforeEach(function () {
+        cy.visit(invoicePageUrl);
+
+        cy.wait('@entitiesRequest').then(({ response }) => {
+          if (response!.body.length === 0) {
+            this.skip();
+          }
+        });
+      });
 
       it('detail button click should load details Invoice page', () => {
         cy.get(entityDetailsButtonSelector).first().click();
@@ -132,7 +191,7 @@ describe('Invoice e2e test', () => {
         cy.url().should('match', invoicePageUrlPattern);
       });
 
-      it('last delete button click should delete instance of Invoice', () => {
+      it.skip('last delete button click should delete instance of Invoice', () => {
         cy.get(entityDeleteButtonSelector).last().click();
         cy.getEntityDeleteDialogHeading('invoice').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
@@ -156,7 +215,7 @@ describe('Invoice e2e test', () => {
       cy.getEntityCreateUpdateHeading('Invoice');
     });
 
-    it('should create an instance of Invoice', () => {
+    it.skip('should create an instance of Invoice', () => {
       cy.get(`[data-cy="date"]`).type('2022-06-23T02:51').should('have.value', '2022-06-23T02:51');
 
       cy.get(`[data-cy="details"]`).type('National').should('have.value', 'National');
@@ -168,6 +227,10 @@ describe('Invoice e2e test', () => {
       cy.get(`[data-cy="paymentDate"]`).type('2022-06-22T22:07').should('have.value', '2022-06-22T22:07');
 
       cy.get(`[data-cy="paymentAmount"]`).type('31928').should('have.value', '31928');
+
+      cy.get(`[data-cy="code"]`).type('syndicate reboot').should('have.value', 'syndicate reboot');
+
+      cy.get(`[data-cy="order"]`).select(1);
 
       cy.get(entityCreateSaveButtonSelector).click();
 

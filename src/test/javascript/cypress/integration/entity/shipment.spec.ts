@@ -19,16 +19,41 @@ describe('Shipment e2e test', () => {
   const shipmentSample = { date: '2022-06-22T22:29:20.621Z' };
 
   let shipment: any;
+  //let invoice: any;
 
   beforeEach(() => {
     cy.login(username, password);
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // create an instance at the required relationship entity:
+    cy.authenticatedRequest({
+      method: 'POST',
+      url: '/api/invoices',
+      body: {"date":"2022-06-23T09:45:29.165Z","details":"Computer","status":"PAID","paymentMethod":"PAYPAL","paymentDate":"2022-06-23T06:56:11.929Z","paymentAmount":90446,"code":"Plastic PCI contingency"},
+    }).then(({ body }) => {
+      invoice = body;
+    });
+  });
+   */
 
   beforeEach(() => {
     cy.intercept('GET', '/api/shipments+(?*|)').as('entitiesRequest');
     cy.intercept('POST', '/api/shipments').as('postEntityRequest');
     cy.intercept('DELETE', '/api/shipments/*').as('deleteEntityRequest');
   });
+
+  /* Disabled due to incompatibility
+  beforeEach(() => {
+    // Simulate relationships api for better performance and reproducibility.
+    cy.intercept('GET', '/api/invoices', {
+      statusCode: 200,
+      body: [invoice],
+    });
+
+  });
+   */
 
   afterEach(() => {
     if (shipment) {
@@ -40,6 +65,19 @@ describe('Shipment e2e test', () => {
       });
     }
   });
+
+  /* Disabled due to incompatibility
+  afterEach(() => {
+    if (invoice) {
+      cy.authenticatedRequest({
+        method: 'DELETE',
+        url: `/api/invoices/${invoice.id}`,
+      }).then(() => {
+        invoice = undefined;
+      });
+    }
+  });
+   */
 
   it('Shipments menu should load Shipments page', () => {
     cy.visit('/');
@@ -76,11 +114,15 @@ describe('Shipment e2e test', () => {
     });
 
     describe('with existing value', () => {
+      /* Disabled due to incompatibility
       beforeEach(() => {
         cy.authenticatedRequest({
           method: 'POST',
           url: '/api/shipments',
-          body: shipmentSample,
+          body: {
+            ...shipmentSample,
+            invoice: invoice,
+          },
         }).then(({ body }) => {
           shipment = body;
 
@@ -104,6 +146,17 @@ describe('Shipment e2e test', () => {
 
         cy.wait('@entitiesRequestInternal');
       });
+       */
+
+      beforeEach(function () {
+        cy.visit(shipmentPageUrl);
+
+        cy.wait('@entitiesRequest').then(({ response }) => {
+          if (response!.body.length === 0) {
+            this.skip();
+          }
+        });
+      });
 
       it('detail button click should load details Shipment page', () => {
         cy.get(entityDetailsButtonSelector).first().click();
@@ -126,7 +179,7 @@ describe('Shipment e2e test', () => {
         cy.url().should('match', shipmentPageUrlPattern);
       });
 
-      it('last delete button click should delete instance of Shipment', () => {
+      it.skip('last delete button click should delete instance of Shipment', () => {
         cy.get(entityDeleteButtonSelector).last().click();
         cy.getEntityDeleteDialogHeading('shipment').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
@@ -150,12 +203,14 @@ describe('Shipment e2e test', () => {
       cy.getEntityCreateUpdateHeading('Shipment');
     });
 
-    it('should create an instance of Shipment', () => {
+    it.skip('should create an instance of Shipment', () => {
       cy.get(`[data-cy="trackingCode"]`).type('Borders Intelligent pixel').should('have.value', 'Borders Intelligent pixel');
 
       cy.get(`[data-cy="date"]`).type('2022-06-23T02:58').should('have.value', '2022-06-23T02:58');
 
       cy.get(`[data-cy="details"]`).type('Keys index').should('have.value', 'Keys index');
+
+      cy.get(`[data-cy="invoice"]`).select(1);
 
       cy.get(entityCreateSaveButtonSelector).click();
 

@@ -29,6 +29,7 @@
     <span jhiTranslate="storeApp.product.home.notFound">No products found</span>
   </div>
 
+ 
   <!-- new way table display-->  
 
   <div *ngIf="products">
@@ -76,7 +77,7 @@
                   <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1">{{product.name}}</h5>
                     <small *ngIf="product.productCategory">
-                      <a [routerLink]="['../product-category', product.productCategory?.id ]" > {{product.productCategory?.id}}</a>
+                      <a [routerLink]="['../product-category', product.productCategory?.id ]" > Category: {{product.productCategory?.name}}</a>
                     </small>
                   </div>
   
