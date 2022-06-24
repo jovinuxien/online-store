@@ -33,8 +33,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.accountService.identity().subscribe(() => {
       if (this.accountService.isAuthenticated()) {
         this.router.navigate(['']);
+        console.log(this.authenticationError)
       }
     });
+   
   }
 
   ngAfterViewInit(): void {
@@ -50,7 +52,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       })
       .subscribe({
         next: () => {
-          this.authenticationError = false;
+          console.log("hello")
           if (!this.router.getCurrentNavigation()) {
             // There were no routing during login (eg from navigationToStoredUrl)
             this.router.navigate(['']);
