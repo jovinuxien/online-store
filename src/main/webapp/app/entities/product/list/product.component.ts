@@ -24,6 +24,7 @@ export class ProductComponent implements OnInit {
   predicate!: string;
   ascending!: boolean;
   ngbPaginationPage = 1;
+  filter!: string;
 
   constructor(
     protected productService: ProductService,
