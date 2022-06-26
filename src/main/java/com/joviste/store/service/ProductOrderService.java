@@ -3,6 +3,9 @@ package com.joviste.store.service;
 import com.joviste.store.domain.ProductOrder;
 import com.joviste.store.repository.ProductOrderRepository;
 import java.util.Optional;
+
+import com.joviste.store.security.AuthoritiesConstants;
+import com.joviste.store.security.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -83,8 +86,15 @@ public class ProductOrderService {
     @Transactional(readOnly = true)
     public Page<ProductOrder> findAll(Pageable pageable) {
         log.debug("Request to get all ProductOrders");
-        return productOrderRepository.findAll(pageable);
+
+        //Editing made for calls just when the user has the admin role
+        if(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN))
+            return productOrderRepository.findAll(pageable);
+        else
+            return productOrderRepository.findAllByCustomerUserLogin(SecurityUtils.getCurrentUserLogin().get(), pageable);
     }
+
+
 
     /**
      * Get all the productOrders with eager load of many-to-many relationships.
@@ -104,7 +114,10 @@ public class ProductOrderService {
     @Transactional(readOnly = true)
     public Optional<ProductOrder> findOne(Long id) {
         log.debug("Request to get ProductOrder : {}", id);
-        return productOrderRepository.findOneWithEagerRelationships(id);
+        if(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN))
+            return productOrderRepository.findOneWithEagerRelationships(id);
+        else
+            return productOrderRepository.findOneByCustomerUserLogin(SecurityUtils.getCurrentUserLogin().get(), id);
     }
 
     /**

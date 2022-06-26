@@ -3,6 +3,9 @@ package com.joviste.store.service;
 import com.joviste.store.domain.Invoice;
 import com.joviste.store.repository.InvoiceRepository;
 import java.util.Optional;
+
+import com.joviste.store.security.AuthoritiesConstants;
+import com.joviste.store.security.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -95,7 +98,10 @@ public class InvoiceService {
     @Transactional(readOnly = true)
     public Page<Invoice> findAll(Pageable pageable) {
         log.debug("Request to get all Invoices");
-        return invoiceRepository.findAll(pageable);
+        if(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN))
+            return invoiceRepository.findAll(pageable);
+        else
+            return invoiceRepository.findAllByCustomerUserLogin(SecurityUtils.getCurrentUserLogin().get(), pageable);
     }
 
     /**
@@ -116,7 +122,10 @@ public class InvoiceService {
     @Transactional(readOnly = true)
     public Optional<Invoice> findOne(Long id) {
         log.debug("Request to get Invoice : {}", id);
-        return invoiceRepository.findOneWithEagerRelationships(id);
+        if(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN))
+            return invoiceRepository.findOneWithEagerRelationships(id);
+        else
+            return invoiceRepository.findOneByCustomerUserLogin(SecurityUtils.getCurrentUserLogin().get(), id);
     }
 
     /**

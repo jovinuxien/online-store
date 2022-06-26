@@ -3,6 +3,9 @@ package com.joviste.store.service;
 import com.joviste.store.domain.OrderItem;
 import com.joviste.store.repository.OrderItemRepository;
 import java.util.Optional;
+
+import com.joviste.store.security.AuthoritiesConstants;
+import com.joviste.store.security.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -83,7 +86,10 @@ public class OrderItemService {
     @Transactional(readOnly = true)
     public Page<OrderItem> findAll(Pageable pageable) {
         log.debug("Request to get all OrderItems");
-        return orderItemRepository.findAll(pageable);
+        if(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN))
+            return orderItemRepository.findAll(pageable);
+        else
+            return  orderItemRepository.findByAllCustomerUserLogin(SecurityUtils.getCurrentUserLogin().get(), pageable);
     }
 
     /**
@@ -104,7 +110,10 @@ public class OrderItemService {
     @Transactional(readOnly = true)
     public Optional<OrderItem> findOne(Long id) {
         log.debug("Request to get OrderItem : {}", id);
-        return orderItemRepository.findOneWithEagerRelationships(id);
+        if(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN))
+            return orderItemRepository.findOneWithEagerRelationships(id);
+        else
+            return orderItemRepository.findOneByCustomerUserLogin(SecurityUtils.getCurrentUserLogin().get(), id);
     }
 
     /**

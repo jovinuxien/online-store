@@ -37,4 +37,21 @@ public interface ProductOrderRepository extends JpaRepository<ProductOrder, Long
 
     @Query("select productOrder from ProductOrder productOrder left join fetch productOrder.customer where productOrder.id =:id")
     Optional<ProductOrder> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query(value =  "SELECT * FROM PRODUCT_ORDER " +
+                    "LEFT JOIN ON CUSTOMER PRODUCT_ORDER.CUSTOMER.ID = CUSTOMER.ID " +
+                    "LEFT JOIN JHI_USER CUSTOMER.USER_ID = JHI_USER.ID " +
+                    "WHERE JHI_USER.LOGIN=:login",
+          nativeQuery = true)
+    Page<ProductOrder> findAllByCustomerUserLogin(@Param("login") String login, Pageable pageable);
+
+
+    @Query(value = "SELECT * FROM PRODUCT_ORDER " +
+        "LEFT JOIN CUSTOMER ON PRODUCT_ORDER.CUSTOMER_ID=CUSTOMER.ID " +
+        "LEFT JOIN JHI_USER ON CUSTOMER.USER_ID=JHI_USER.ID " +
+        "WHERE PRODUCT_ORDER.ID=:id AND JHI_USER.LOGIN=:login",
+        nativeQuery = true)
+    Optional<ProductOrder> findOneByCustomerUserLogin(@Param("login") String login, @Param("id") Long id);
+
+
 }

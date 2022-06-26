@@ -3,6 +3,8 @@ package com.joviste.store.repository;
 import com.joviste.store.domain.OrderItem;
 import java.util.List;
 import java.util.Optional;
+
+import com.joviste.store.domain.Shipment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -39,4 +41,20 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
         "select orderItem from OrderItem orderItem left join fetch orderItem.product left join fetch orderItem.order where orderItem.id =:id"
     )
     Optional<OrderItem> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query(value = "SELECT * FROM ORDER_ITEM " +
+        "LEFT JOIN PRODUCT_ORDER ON ORDER_ITEM.ORDER_ID=PRODUCT_ORDER.ID " +
+        "LEFT JOIN CUSTOMER ON PRODUCT_ORDER.CUSTOMER_ID=CUSTOMER.ID " +
+        "LEFT JOIN JHI_USER ON CUSTOMER.USER_ID=JHI_USER.ID " +
+        "WHERE JHI_USER.LOGIN=:login",
+    nativeQuery = true)
+    Page<OrderItem> findByAllCustomerUserLogin(@Param("login") String login , Pageable pageable);
+
+    @Query(value = "SELECT * FROM ORDER_ITEM " +
+        "LEFT JOIN PRODUCT_ORDER ON ORDER_ITEM.ORDER_ID=PRODUCT_ORDER.ID "+
+        "LEFT JOIN CUSTOMER ON PRODUCT_ORDER.CUSTOMER_ID=CUSTOMER.ID " +
+        "LEFT JOIN JHI_USER ON CUSTOMER.USER_ID=JHI_USER.ID " +
+        "WHERE JHI_USER.LOGIN=:login AND ORDER_ITEM.ID=:id  ",
+        nativeQuery = true)
+    Optional<OrderItem> findOneByCustomerUserLogin(@Param("login") String login, @Param("id") Long id);
 }

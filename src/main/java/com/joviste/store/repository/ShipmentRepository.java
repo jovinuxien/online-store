@@ -1,5 +1,6 @@
 package com.joviste.store.repository;
 
+import com.joviste.store.domain.Invoice;
 import com.joviste.store.domain.Shipment;
 import java.util.List;
 import java.util.Optional;
@@ -37,4 +38,22 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     @Query("select shipment from Shipment shipment left join fetch shipment.invoice where shipment.id =:id")
     Optional<Shipment> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query(value = "SELECT * FROM SHIPMENT " +
+           "LEFT JOIN INVOICE ON SHIPMENT.INVOICE_ID=INVOICE.ID " +
+           "LEFT JOIN PRODUCT_ORDER ON INVOICE.ORDER_ID=PRODUCT_ORDER.ID " +
+           "LEFT JOIN CUSTOMER ON PRODUCT_ORDER.CUSTOMER_ID=CUSTOMER.ID " +
+           "LEFT JOIN JHI_USER ON CUSTOMER.USER_ID=JHI_USER.ID " +
+           "WHERE JHI_USER.LOGIN=:login",
+           nativeQuery = true)
+    Page<Shipment> findAllByCustomerUserLogin(@Param("login") String login, Pageable pageable);
+
+    @Query(value = "SELECT * FROM SHIPMENT " +
+        "LEFT JOIN INVOICE ON SHIPMENT.INVOICE_ID=INVOICE.ID " +
+        "LEFT JOIN PRODUCT_ORDER ON INVOICE.ORDER_ID=PRODUCT_ORDER.ID "+
+        "LEFT JOIN CUSTOMER ON PRODUCT_ORDER.CUSTOMER_ID=CUSTOMER.ID " +
+        "LEFT JOIN JHI_USER ON CUSTOMER.USER_ID=JHI_USER.ID " +
+        "WHERE JHI_USER.LOGIN=:login AND SHIPMENT.ID=:id",
+        nativeQuery = true)
+    Optional<Shipment> findOneByCustomerUserLogin(@Param("login") String login, @Param("id") Long id);
 }

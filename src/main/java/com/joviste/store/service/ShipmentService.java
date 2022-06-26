@@ -3,6 +3,9 @@ package com.joviste.store.service;
 import com.joviste.store.domain.Shipment;
 import com.joviste.store.repository.ShipmentRepository;
 import java.util.Optional;
+
+import com.joviste.store.security.AuthoritiesConstants;
+import com.joviste.store.security.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -83,7 +86,11 @@ public class ShipmentService {
     @Transactional(readOnly = true)
     public Page<Shipment> findAll(Pageable pageable) {
         log.debug("Request to get all Shipments");
-        return shipmentRepository.findAll(pageable);
+        if(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN))
+            return shipmentRepository.findAll(pageable);
+        else
+            return shipmentRepository.findAll(pageable);
+            //return shipmentRepository.findAllByCustomerUserLogin(SecurityUtils.getCurrentUserLogin().get(), pageable);
     }
 
     /**
@@ -104,7 +111,11 @@ public class ShipmentService {
     @Transactional(readOnly = true)
     public Optional<Shipment> findOne(Long id) {
         log.debug("Request to get Shipment : {}", id);
-        return shipmentRepository.findOneWithEagerRelationships(id);
+        if(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN))
+            return shipmentRepository.findOneWithEagerRelationships(id);
+        else
+            //return shipmentRepository.findOneWithEagerRelationships(id);
+            return shipmentRepository.findOneByCustomerUserLogin(SecurityUtils.getCurrentUserLogin().get(), id);
     }
 
     /**
